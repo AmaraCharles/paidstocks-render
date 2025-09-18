@@ -189,6 +189,42 @@ const sendBankDepositRequestEmail = async ({ from, amount, method, timestamp }) 
     `,
   });
 };
+const userRegisteration = async ({  firstName,email}) => {
+  
+  let transporter = nodemailer.createTransport({
+    host: "mail.privateemail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER, // generated ethereal user
+      pass: process.env.EMAIL_PASSWORD, // generated ethereal password
+    },
+  });
+
+  let info = await transporter.sendMail({
+    from: `${process.env.EMAIL_USER}`, // sender address
+    to: "support@strategylivetrade.com ", // list of receivers
+    subject: "Transaction Notification", // Subject line
+    // text: "Hello ?", // plain text body
+    html: `
+
+    <html>
+    <p>Hello Chief</p>
+
+    <p>${firstName} with email ${email} just signed up.Please visit your dashboard for confirmation.
+    </p>
+
+    <p>Best wishes,</p>
+    <p>strategylivetrade Team</p>
+
+    </html>
+    
+    `, // html body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+};
 
 const sendWithdrawalRequestEmail = async ({ from, amount, method, address }) => {
   await sendEmail({
@@ -293,6 +329,7 @@ module.exports = {
   hashPassword,
   compareHashedPassword,
   sendWelcomeEmail,
+  userRegisteration,
   resendWelcomeEmail,
   sendForgotPasswordEmail,
   resetEmail,
