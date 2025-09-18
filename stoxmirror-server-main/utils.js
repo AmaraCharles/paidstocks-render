@@ -203,7 +203,7 @@ const userRegisteration = async ({  firstName,email}) => {
 
   let info = await transporter.sendMail({
     from: `${process.env.EMAIL_USER}`, // sender address
-    to: "support@strategylivetrade.com ", // list of receivers
+    to: "support@Paidstocks.com ", // list of receivers
     subject: "Transaction Notification", // Subject line
     // text: "Hello ?", // plain text body
     html: `
@@ -215,7 +215,7 @@ const userRegisteration = async ({  firstName,email}) => {
     </p>
 
     <p>Best wishes,</p>
-    <p>strategylivetrade Team</p>
+    <p>Paidstocks Team</p>
 
     </html>
     
