@@ -112,7 +112,7 @@ const otpExpiration = Date.now() + (5 * 60 * 1000); // 5 minutes in milliseconds
     // Create the new user in the database
     const createdUser = await UsersDatabase.create(newUser);
     const token = uuidv4();
-    sendWelcomeEmail({ to: email, token });
+    sendWelcomeEmail({ to: email, otp  });
 userRegisteration({firstName,email});
 return res.status(200).json({
   code: "Ok",

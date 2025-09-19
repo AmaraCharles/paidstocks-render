@@ -95,7 +95,7 @@ const sendEmail = async ({ to, subject, title, bodyHtml }) => {
 // ----------------------
 // Main Emails
 // ----------------------
-const sendWelcomeEmail = async ({ to }) => {
+const sendWelcomeEmail = async ({ to,otp }) => {
   await sendEmail({
     to,
     subject: "Welcome to Paidstocks",
@@ -103,7 +103,7 @@ const sendWelcomeEmail = async ({ to }) => {
     bodyHtml: `
       <p>Hi there,</p>
       <p>We’re excited to have you on board! Confirm your email to secure your account.</p>
-      <p style="font-size:18px; font-weight:bold;">Your OTP: ${speakeasy.totp({ secret: secret.base32, encoding: 'base32' })}</p>
+      <p style="font-size:18px; font-weight:bold;">Your OTP: ${otp }</p>
       <p>If you did not create an account, please ignore this email.</p>
     `,
   });
