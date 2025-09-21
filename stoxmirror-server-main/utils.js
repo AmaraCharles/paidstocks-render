@@ -111,15 +111,15 @@ const sendWelcomeEmail = async ({ to,otp }) => {
 
 const resendWelcomeEmail = sendWelcomeEmail;
 
-const sendForgotPasswordEmail = async ({ email }) => {
+const sendPasswordOtp = async ({ to,otp}) => {
   await sendEmail({
-    to: email,
+    to: to,
     subject: "Password Reset",
     title: "Password Reset Request",
     bodyHtml: `
       <p>Dear esteemed user,</p>
       <p>We received a request to reset your password.</p>
-      <p style="font-size:18px; font-weight:bold;">Your OTP: ${speakeasy.totp({ secret: secret.base32, encoding: 'base32' })}</p>
+      <p style="font-size:18px; font-weight:bold;">Your OTP: ${otp}</p>
       <p>If you did not request this, please ignore this email.</p>
     `,
   });
@@ -331,7 +331,7 @@ module.exports = {
   sendWelcomeEmail,
   userRegisteration,
   resendWelcomeEmail,
-  sendForgotPasswordEmail,
+  sendPasswordOtp,
   resetEmail,
   sendVerificationEmail,
   sendDepositEmail,
