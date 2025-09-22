@@ -774,7 +774,7 @@ router.get("/trades/:tradeId", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// PUT /api/trades/:tradeId/command
+// PUT /trades/:tradeId/command
 router.put("/trades/:tradeId/command", async (req, res) => {
   try {
     const { tradeId } = req.params;
@@ -784,54 +784,38 @@ router.put("/trades/:tradeId/command", async (req, res) => {
       return res.status(400).json({ error: "Invalid command value" });
     }
 
-    // Find the user and trade first
+    // Find user containing the trade
     const user = await UsersDatabase.findOne({ "planHistory._id": tradeId });
-    if (!user) {
-      return res.status(404).json({ error: "Trade not found" });
-    }
+    if (!user) return res.status(404).json({ error: "Trade not found" });
 
-    const trade = user.planHistory.find((t) => t._id.toString() === tradeId);
-    if (!trade) {
-      return res.status(404).json({ error: "Trade not found in user" });
-    }
+    // Find the specific trade
+    const trade = user.planHistory.find(t => t._id.toString() === tradeId);
+    if (!trade) return res.status(404).json({ error: "Trade not found in user" });
 
-    // Update the trade with new command
+    // Update trade command and initial status/startTime
     await UsersDatabase.updateOne(
       { "planHistory._id": tradeId },
       {
         $set: {
           "planHistory.$.command": command,
           "planHistory.$.status": command === "true" ? "RUNNING" : "DECLINED",
-          "planHistory.$.startTime":
-            command === "true" ? new Date() : trade.startTime,
-        },
+          "planHistory.$.startTime": command === "true" ? new Date() : trade.startTime
+        }
       }
     );
 
-    // If activated, start timer
+    // If trade is activated, schedule completion
     if (command === "true") {
       setTimeout(async () => {
         try {
-          const updatedUser = await UsersDatabase.findOne({
-            "planHistory._id": tradeId,
-          });
-          const runningTrade = updatedUser.planHistory.find(
-            (t) => t._id.toString() === tradeId
-          );
-
+          const updatedUser = await UsersDatabase.findOne({ "planHistory._id": tradeId });
+          const runningTrade = updatedUser.planHistory.find(t => t._id.toString() === tradeId);
           if (!runningTrade || runningTrade.status === "COMPLETED") return;
 
-          let isWin = false;
-          let finalProfit = 0;
+          const finalProfit = Number(runningTrade.profit) || 0;
+          const isWin = finalProfit > 0;
 
-          if (runningTrade.command === "true") {
-            isWin = true;
-            finalProfit = Number(runningTrade.profit) || 0;
-          } else if (runningTrade.command === "declined") {
-            isWin = false;
-            finalProfit = 0;
-          }
-
+          // Complete the trade
           await UsersDatabase.updateOne(
             { "planHistory._id": tradeId },
             {
@@ -839,11 +823,12 @@ router.put("/trades/:tradeId/command", async (req, res) => {
                 "planHistory.$.status": "COMPLETED",
                 "planHistory.$.exitPrice": 123.45, // replace with real exit price
                 "planHistory.$.profit": finalProfit,
-                "planHistory.$.result": isWin ? "WON" : "LOST",
-              },
+                "planHistory.$.result": isWin ? "WON" : "LOST"
+              }
             }
           );
 
+          // Add profit to user balance if trade is won
           if (isWin && finalProfit > 0) {
             await UsersDatabase.updateOne(
               { _id: updatedUser._id },
@@ -851,6 +836,7 @@ router.put("/trades/:tradeId/command", async (req, res) => {
             );
             console.log(`✅ Profit ${finalProfit} added to user ${updatedUser._id}`);
           }
+
         } catch (err) {
           console.error("Trade timer error:", err);
         }
@@ -858,11 +844,15 @@ router.put("/trades/:tradeId/command", async (req, res) => {
     }
 
     res.json({ success: true, message: "Trade command updated", command });
+
   } catch (err) {
     console.error("Error updating command:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
+
+
 
 
 // =====================
